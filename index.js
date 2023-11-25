@@ -28,7 +28,22 @@ async function run() {
     const membershipCollection = client
       .db("devPointDB")
       .collection("membership");
+    const postCollection = client.db("devPointDB").collection("posts");
 
+    // post api--------------
+    app.get("/all-post", async (req, res) => {
+      try {
+        const result = await postCollection
+          .find()
+          .sort({ postedTime: -1 })
+          .toArray();
+        res.send(result);
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    });
+
+    // membership data ---------------------------------
     app.get("/membership", async (req, res) => {
       const result = await membershipCollection.find().toArray();
       res.send(result);
