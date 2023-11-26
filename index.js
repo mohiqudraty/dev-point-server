@@ -36,8 +36,13 @@ async function run() {
     // post api=================================
     app.get("/all-post", async (req, res) => {
       try {
+        const tag = req.query.tag;
+        let query = {};
+        if (tag) {
+          query = { tag: { $regex: new RegExp(tag, "i") } };
+        }
         const result = await postCollection
-          .find()
+          .find(query)
           .sort({ postedTime: -1 })
           .toArray();
         res.send(result);
