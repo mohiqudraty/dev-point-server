@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@assignment12.130rwa2.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -33,7 +33,7 @@ async function run() {
       .db("devPointDB")
       .collection("announcements");
 
-    // post api--------------
+    // post api=================================
     app.get("/all-post", async (req, res) => {
       try {
         const result = await postCollection
@@ -44,6 +44,13 @@ async function run() {
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
+    });
+    // single post api---------------
+    app.get("/single-post/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await postCollection.findOne(query);
+      res.send(result);
     });
 
     // announcement api -------------
