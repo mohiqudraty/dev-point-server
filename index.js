@@ -31,9 +31,17 @@ async function run() {
     const postCollection = client.db("devPointDB").collection("posts");
     const announcementCollection = client
       .db("devPointDB")
-      .collection("announcements");
+      .collection("announcement");
 
     // post api=================================
+
+    app.post("/add-post", async (req, res) => {
+      const post = req.body;
+      console.log(post);
+      const result = await postCollection.insertOne(post);
+      res.send(result);
+    });
+
     app.get("/all-post", async (req, res) => {
       try {
         const tag = req.query.tag;
@@ -50,6 +58,7 @@ async function run() {
         console.error("Error fetching posts:", error);
       }
     });
+
     // single post api---------------
     app.get("/single-post/:id", async (req, res) => {
       const id = req.params.id;
