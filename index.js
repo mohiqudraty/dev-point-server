@@ -73,15 +73,16 @@ app.post('/comment', async (req, res) => {
 
 // post get ---
 app.get('/comments', async(req, res) => {
-  const postId = req.query.postId
-  const query = {}
-  if(postId){
-    query = {postId: postId}
-  }
-  const comment = await commentCollection.find(query).toArray()
+  const comment = await commentCollection.find().toArray()
   res.send(comment)
 })
 
+app.get('/comments', async(req, res) => {
+  const postId = req.query.postId
+  const query = {postId: postId}
+  const comment = await commentCollection.find(query).toArray()
+  res.send(comment)
+})
 
 
 
@@ -224,6 +225,14 @@ app.get('/my-posts', async (req, res) => {
       const announcement = await announcementCollection.find().toArray();
       res.send(announcement);
     });
+    app.post("/announcements", async (req, res) => {
+      const announcement = req.body
+      const result = await announcementCollection.insertOne(announcement)
+      res.send(result);
+    });
+
+
+
 
     // membership data ---------------------------------
     app.get("/membership", async (req, res) => {
