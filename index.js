@@ -35,7 +35,52 @@ async function run() {
     const userCollection = client
       .db("devPointDB")
       .collection("users");
+    const commentCollection = client
+      .db("devPointDB")
+      .collection("comments");
+    const reportCollection = client
+      .db("devPointDB")
+      .collection("reports");
 
+
+
+
+// make admin api  ----------
+app.put('/make-admin', async (req, res) => {
+  const id = req.query.id
+  const query = {_id: new ObjectId(id)}
+  const {newRole} = req.body
+  const result = await userCollection.updateOne(query, { $set: { role: newRole } })
+  res.send(result)
+})
+
+// report api ------------
+app.post('/report', async (req, res) => {
+  const feedback = req.body
+  const newReport = await reportCollection.insertOne(feedback)
+  res.send(newReport)
+})
+
+
+
+// comment api ------------------
+// post comment ----
+app.post('/comment', async (req, res) => {
+  const commentData = req.body
+  const newComment = await commentCollection.insertOne(commentData)
+  res.send(newComment)
+})
+
+// post get ---
+app.get('/comments', async(req, res) => {
+  const postId = req.query.postId
+  const query = {}
+  if(postId){
+    query = {postId: postId}
+  }
+  const comment = await commentCollection.find(query).toArray()
+  res.send(comment)
+})
 
 
 
@@ -57,7 +102,7 @@ if(existUser){
 // user get api -----------------------
 app.get('/users', async (req, res) => {
   const email = req.query.email
-  console.log(email);
+  // console.log(email);
   const query = {email: email}
   const result = await userCollection.findOne(query)
   res.send(result)
@@ -77,7 +122,7 @@ app.get('/all-users', async (req, res) => {
       try {
         const result = await postCollection.updateOne(
           { _id: new ObjectId(id) },
-          { $inc: { upVote: 1 } }
+          { $inc: { upVote: 1 }, }
         );
         res.send(result);
       } catch (error) {
@@ -108,7 +153,7 @@ app.get('/all-users', async (req, res) => {
     // add post ----
     app.post("/add-post", async (req, res) => {
       const post = req.body;
-      console.log(post);
+      // console.log(post);
       const addPost = await postCollection.insertOne(post);
       res.send(addPost);
     });
@@ -159,6 +204,20 @@ app.get('/all-users', async (req, res) => {
       const post = await postCollection.findOne(query);
       res.send(post);
     });
+
+
+// my post api  --------
+app.get('/my-posts', async (req, res) => {
+  const email = req.query.email
+  const query = {authorEmail: email}
+  const myPost = await postCollection.find(query).sort({ postedTime: -1 }).toArray()
+  res.send(myPost)
+})
+
+
+
+
+
 
     // announcement api -------------
     app.get("/announcements", async (req, res) => {
