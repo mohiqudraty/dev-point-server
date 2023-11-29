@@ -3,6 +3,7 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken")
 require("dotenv").config();
 const app = express();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const port = process.env.PORT || 3000;
 
 // middleware
@@ -73,21 +74,30 @@ const verifyToken = (req, res, next) => {
   // next()
 }
 
-// make admin api  ----------
+// payment -----------
+// app.post('/create-payment-intent', async (req, res) => {
+//   try {
+//     const { price } = req.body;
+//     if (!price || isNaN(price)) {
+//       return res.status(400).send({ error: 'Invalid price' });
+//     }
 
-app.get('user/admin/:email', verifyToken, async(req, res) => {
-  const email = req.params.email;
-  if(email !== req.decoded.email){
-    return res.status(403).send({message: 'forbidden Access'})
-  }
-  const query = {email: email}
-  const user = await userCollection.findOne(query)
-  const admin = false
-  if(user){
-    admin = user?.role === 'admin'
-  }
-  res.send({admin})
-})
+//     const amount = parseInt(price * 100);
+
+//     const paymentIntent = await stripe.paymentIntents.create({
+//       amount: amount,
+//       currency: 'usd',
+//       payment_method_types: ['card']
+//     });
+
+//     res.send({ clientSecret: paymentIntent.client_secret });
+//   } catch (error) {
+//     console.error('Error creating payment intent:', error);
+//     res.status(500).send({ error: 'Error creating payment intent' });
+//   }
+// });
+
+
 
 
 
@@ -105,8 +115,17 @@ app.post('/report', async (req, res) => {
   const newReport = await reportCollection.insertOne(feedback)
   res.send(newReport)
 })
-
-
+// get report 
+app.get('/report', async (req, res) => {
+  const allReport = await reportCollection.find().toArray()
+  res.send(allReport)
+})
+app.delete('/report', async(req, res) => {
+  const id = req.query.id
+  const query = {_id: new ObjectId(id)}
+  const result = await reportCollection.deleteOne(query)
+  res.send(result)
+})
 
 // comment api ------------------
 // post comment ----
@@ -128,6 +147,15 @@ app.get('/comments', async(req, res) => {
   const comment = await commentCollection.find(query).toArray()
   res.send(comment)
 })
+// // delete comment 
+// app.delete('/comments', async(req, res) => {
+//   const id = req.query.id
+//   const query = {_id: new ObjectId(id)}
+//   const result = await commentCollection.deleteOne(query)
+//   res.send(result)
+// })
+
+
 
 
 // get all user api -----------==========================
@@ -156,6 +184,14 @@ app.get('/users', async (req, res) => {
   // console.log(email);
   const query = {email: email}
   const result = await userCollection.findOne(query)
+  res.send(result)
+})
+// user delete api -----------------------
+app.delete('/users', async (req, res) => {
+  const email = req.query.email
+  // console.log(email);
+  const query = {email: email}
+  const result = await userCollection.deleteOne(query)
   res.send(result)
 })
 
